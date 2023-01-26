@@ -1,24 +1,65 @@
-import React from 'react';
+import React, { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+// import About from "./About";
+// import Home from "./Home";
+import Grid from '@material-ui/core/Grid';
+import Box from '@material-ui/core/Box';
+import { IconButton } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import PhotoCameraRoundedIcon from "@material-ui/icons/PhotoCameraRounded";
+
+const useStyles = makeStyles((theme) => ({
+  root: {
+    height: "100%",
+    textAlign: 'center',
+  },
+  imgBox: {
+    maxWidth: "80%",
+    maxHeight: "80%",
+    margin: "10px"
+  },
+  img: {
+    height: "inherit",
+    maxWidth: "inherit",
+  },
+  input: {
+    display: "none"
+  }
+}));
 
 function App() {
+  const classes = useStyles();
+  const [source, setSource] = useState("");
+  const handleCapture = (target) => {
+    if(target.files){
+      if(target.files.length !== 0){
+        const file = target.files[0];
+        const newUrl = URL.createObjectURL(file);
+        setSource(newUrl);
+      }
+    }
+  };
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={classes.root}>
+      <Grid container>
+        <Grid item xs={12}>
+          <h5>Capture your image</h5>
+          {source && 
+            <Box display="flex" justifyCenter="center" border={1} className={classes.imgBox}>
+              <img src={source} alt={"snap"} className={classes.img}></img>
+            </Box>}
+            <input accept="image/*" className={classes.input} id='icon-button-file' type="file" capture="camera" onChange={(e) => handleCapture(e.target)} />
+            <label htmlFor='icon-button-file'>
+              <IconButton 
+                color="primary" aria-label="upload picture"
+                component="span">
+                  <PhotoCameraRoundedIcon fontSize="large" color="primary"/>
+                </IconButton>
+            </label>
+        </Grid>
+      </Grid>
     </div>
   );
 }
