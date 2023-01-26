@@ -9,7 +9,7 @@ import SaveIcon from '@material-ui/icons/Save';
 import {
   fileSave,
   supported,
-} from 'https://unpkg.com/browser-fs-access';
+} from 'browser-fs-access';
 
 const useStyles = makeStyles((theme) => ({
   root: {
