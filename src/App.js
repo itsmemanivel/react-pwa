@@ -126,7 +126,7 @@ function App() {
     setSource(false);
     setCapturing(true);
     mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
-      mimeType: "video/webm"
+      mimeType: "video/mp4"
     });
     mediaRecorderRef.current.addEventListener(
       "dataavailable",
