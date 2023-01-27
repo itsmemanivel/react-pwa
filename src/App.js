@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
@@ -10,6 +10,8 @@ import {
   fileSave,
   supported,
 } from 'browser-fs-access';
+import Webcam from "react-webcam";
+
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -27,6 +29,9 @@ const useStyles = makeStyles((theme) => ({
   },
   input: {
     display: "none"
+  },
+  marginLeft: {
+    marginLeft: "10px"
   }
 }));
 
@@ -83,7 +88,7 @@ function App() {
 
     const blob = dataURItoBlob(img.uploadedImage);
     const file = await fileSave(blob, {
-      fileName: document.title + "-" +makeid(5),
+      fileName: document.title + "-" + makeid(5),
       extensions: ['.png'],
       description: 'PNG files',
     });
@@ -111,16 +116,76 @@ function App() {
     // return handle;
   };
 
+
+  const webcamRef = React.useRef(null);
+  const mediaRecorderRef = React.useRef(null);
+  const [capturing, setCapturing] = React.useState(false);
+  const [recordedChunks, setRecordedChunks] = React.useState([]);
+
+  const handleStartCaptureClick = React.useCallback(() => {
+    setSource(false);
+    setCapturing(true);
+    mediaRecorderRef.current = new MediaRecorder(webcamRef.current.stream, {
+      mimeType: "video/webm"
+    });
+    mediaRecorderRef.current.addEventListener(
+      "dataavailable",
+      handleDataAvailable
+    );
+    mediaRecorderRef.current.start();
+  }, [webcamRef, setCapturing, mediaRecorderRef]);
+
+  const handleDataAvailable = React.useCallback(
+    ({ data }) => {
+      if (data.size > 0) {
+        setRecordedChunks((prev) => prev.concat(data));
+      }
+    },
+    [setRecordedChunks]
+  );
+
+  const handleStopCaptureClick = React.useCallback(() => {
+    mediaRecorderRef.current.stop();
+    setCapturing(false);
+  }, [mediaRecorderRef, webcamRef, setCapturing]);
+
+  const handleDownload = React.useCallback(() => {
+    if (recordedChunks.length) {
+      const blob = new Blob(recordedChunks, {
+        type: "video/webm"
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      document.body.appendChild(a);
+      a.style = "display: none";
+      a.href = url;
+      a.download = "react-webcam-stream-capture.webm";
+      a.click();
+      window.URL.revokeObjectURL(url);
+      setRecordedChunks([]);
+    }
+  }, [recordedChunks]);
+
   return (
     <div className={classes.root}>
       <Grid container>
         <Grid item xs={12}>
-          <h5>Capture your image</h5>
-          {source &&
+          <h5>Capture your video</h5>
+          {source && !capturing &&
             <Box display="flex" justifyCenter="center" border={1} className={classes.imgBox}>
               <img src={source} alt={"snap"} className={classes.img}></img>
             </Box>
           }
+          {!source &&
+            <><Webcam audio={true} ref={webcamRef} /><br /></>}
+          {capturing ? (
+            <button onClick={handleStopCaptureClick}>Stop Capture</button>
+          ) : (
+            <><button onClick={handleStartCaptureClick}>Start Capture</button></>
+          )}
+          {recordedChunks.length > 0 && (
+            <button className={classes.marginLeft} onClick={handleDownload}>Download</button>
+          )}
           <input accept="image/*" className={classes.input} id='icon-button-file' type="file" capture="camera" onChange={(e) => handleCapture(e.target)} />
           <label htmlFor='icon-button-file'>
             <IconButton
