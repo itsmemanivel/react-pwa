@@ -152,7 +152,7 @@ function App() {
   const handleDownload = React.useCallback(() => {
     if (recordedChunks.length) {
       const blob = new Blob(recordedChunks, {
-        type: "video/webm"
+        type: "video/mp4"
       });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -166,6 +166,10 @@ function App() {
     }
   }, [recordedChunks]);
 
+  const videoConstraints = {
+    facingMode: { exact: "environment" }
+  };
+
   return (
     <div className={classes.root}>
       <Grid container>
@@ -177,7 +181,7 @@ function App() {
             </Box>
           }
           {!source &&
-            <><Webcam audio={true} ref={webcamRef} /><br /></>}
+            <><Webcam audio={true} ref={webcamRef} videoConstraints={videoConstraints} /><br /></>}
           {capturing ? (
             <button onClick={handleStopCaptureClick}>Stop Capture</button>
           ) : (
